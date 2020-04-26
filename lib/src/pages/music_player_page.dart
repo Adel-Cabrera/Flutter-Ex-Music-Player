@@ -1,10 +1,11 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:musicplayer/src/helpers/helpers.dart';
 import 'package:musicplayer/src/models/audioplayer_model.dart';
 import 'package:musicplayer/src/widgets/custom_appbar.dart';
 import 'package:provider/provider.dart';
+
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class MusicPlayerPage extends StatelessWidget {
   @override
@@ -91,7 +92,10 @@ class TituloPlay extends StatefulWidget {
 class _TituloPlayState extends State<TituloPlay>
     with SingleTickerProviderStateMixin {
   bool isPlaying = false;
+  bool firstTime = true;
   AnimationController playAnimation;
+
+  final assetAudioPlayer = new AssetsAudioPlayer();
 
   @override
   void initState() {
@@ -108,6 +112,23 @@ class _TituloPlayState extends State<TituloPlay>
   void dispose() {
     playAnimation.dispose();
     super.dispose();
+  }
+
+  void open() {
+    final audioPlayerModel =
+        Provider.of<AudioPlayerModel>(context, listen: false);
+
+    assetAudioPlayer.open(
+      Audio('assets/Breaking-Benjamin-Far-Away.mp3'),
+    );
+
+    assetAudioPlayer.currentPosition.listen((duration) {
+      audioPlayerModel.current = duration;
+    });
+
+    assetAudioPlayer.current.listen((playingAudio) {
+      audioPlayerModel.songDuration = playingAudio.audio.duration;
+    });
   }
 
   @override
@@ -161,6 +182,12 @@ class _TituloPlayState extends State<TituloPlay>
                 this.isPlaying = true;
                 audioPlayerModel.controller.repeat();
               }
+              if (firstTime) {
+                open();
+                firstTime = false;
+              } else {
+                assetAudioPlayer.playOrPause();
+              }
             },
             child: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
@@ -187,7 +214,7 @@ class ImagenDiscoDuracion extends StatelessWidget {
         children: <Widget>[
           ImagenDisco(),
           SizedBox(
-            width: 40.0,
+            width: 20.0,
           ),
           BarraProgreso(),
           SizedBox(
@@ -207,15 +234,19 @@ class BarraProgreso extends StatelessWidget {
         0.4,
       ),
     );
+
+    final audioPlayerModel = Provider.of<AudioPlayerModel>(context);
+    final porcentaje = audioPlayerModel.porcentaje;
+
     return Container(
       child: Column(
         children: <Widget>[
+          Text(
+            '${audioPlayerModel.songTotalDuration}',
+            style: estilo,
+          ),
           SizedBox(
             height: 10.0,
-          ),
-          Text(
-            '00:00',
-            style: estilo,
           ),
           Stack(
             children: <Widget>[
@@ -232,7 +263,7 @@ class BarraProgreso extends StatelessWidget {
                 bottom: 0.0,
                 child: Container(
                   width: 3.0,
-                  height: 100.0,
+                  height: 230.0 * porcentaje,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(
                       0.8,
@@ -242,12 +273,12 @@ class BarraProgreso extends StatelessWidget {
               ),
             ],
           ),
-          Text(
-            '00:00',
-            style: estilo,
-          ),
           SizedBox(
             height: 10.0,
+          ),
+          Text(
+            '${audioPlayerModel.currentSecond}',
+            style: estilo,
           ),
         ],
       ),
