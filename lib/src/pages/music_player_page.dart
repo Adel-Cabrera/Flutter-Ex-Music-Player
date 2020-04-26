@@ -1,17 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:musicplayer/src/helpers/helpers.dart';
 import 'package:musicplayer/src/widgets/custom_appbar.dart';
 
 class MusicPlayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: <Widget>[
-          CustomAppBar(),
-          ImagenDiscoDuracion(),
-          TituloPlay(),
+          Background(),
+          Column(
+            children: <Widget>[
+              CustomAppBar(),
+              ImagenDiscoDuracion(),
+              TituloPlay(),
+              Expanded(
+                child: Lyrics(),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class Background extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    return Container(
+      width: double.infinity,
+      height: screenSize.height * 0.85,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(
+            60.0,
+          ),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.center,
+          colors: [
+            Color(0xFF33333E),
+            Color(0xFF201E28),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Lyrics extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final lyrics = getLyrics();
+    return Container(
+      child: ListWheelScrollView(
+        itemExtent: 42,
+        physics: BouncingScrollPhysics(),
+        diameterRatio: 1.5,
+        children: lyrics
+            .map(
+              (verso) => Text(
+                '$verso',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  color: Colors.white.withOpacity(
+                    0.6,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }
